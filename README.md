@@ -73,3 +73,4 @@ projet-algorithme-gaetan-Algorithme-de-Compression-de-Huffman/
 ## Authors
 
 - [@gaesty](https://www.github.com/gaesty)
+- [@bdallard](https://github.com/bdallard)
