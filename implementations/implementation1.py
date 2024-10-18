@@ -14,9 +14,7 @@ while len(tree) > 1:
     for pair in left[1:]:  
         pair[1] = '1' + pair[1]
     heappush(tree, [right[0] + left[0]] + right[1:] + left[1:])
-# print(tree)
 huffman_list = right[1:] + left[1:]
-# print(huffman_list)
 huffman_dict = {a[0]: str(a[1]) for a in huffman_list}
 encoded_text = ''.join(huffman_dict[lettre] for lettre in texte)
 print(encoded_text)
