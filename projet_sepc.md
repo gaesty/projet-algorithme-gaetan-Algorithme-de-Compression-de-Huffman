@@ -21,7 +21,7 @@ Vous devrez :
 4. Écrire des tests unitaires pour vos implémentations en utilisant pytest.
     * Les tests doivent couvrir les cas d'utilisation principaux, les cas limites, et vérifier la correction des résultats.
     * Les tests doivent être placés dans un répertoire dédié (tests/) et être clairement organisés.
-5. Analyser les complexités (temps et espace) des deux implémentations et comparer leurs performances.
+5. ~~Analyser les complexités (temps et espace) des deux implémentations et comparer leurs performances.~~
 6. ~~Créer une représentation graphique de l'algorithme pour illustrer son fonctionnement interne. Cela peut être sous forme de diagrammes, animations ou visualisations interactives.~~
 
 

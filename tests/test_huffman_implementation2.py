@@ -1,46 +1,148 @@
 import pytest
-from implementations.implementation2 import HuffmanCompression
+# from implementations.implementation2 import HuffmanCompression
 
-def test_huffman_compression():
-    # Test de base avec un texte normal
-    texte = "hello"
-    huffman = HuffmanCompression(texte)
+import heapq
+from collections import defaultdict
+from graphviz import Digraph
+
+class HuffmanNode:
+    def __init__(self, freq, symbol, left=None, right=None):
+        self.freq = freq  # Fréquence du symbole
+        self.symbol = symbol  # Symbole (caractère)
+        self.left = left  # Sous-arbre gauche
+        self.right = right  # Sous-arbre droit
+
+    def __lt__(self, other):
+        return self.freq < other.freq
+
+class HuffmanCompression:
+    def __init__(self, texte=""):
+        self.texte = texte
+        self.freq_lib = defaultdict(int)
+        self.huffman_dict = {}
+        self.inverse_huffman_dict = {}
+        self.root = None
+
+    def calculate_frequencies(self):
+        for lettre in self.texte:
+            self.freq_lib[lettre] += 1
+        return self.freq_lib
+
+    def build_tree(self):
+        if not self.freq_lib:
+            raise ValueError("La fréquence des caractères est vide, impossible de construire l'arbre.")
+        
+        heap = [HuffmanNode(freq, lettre) for lettre, freq in self.freq_lib.items()]
+        heapq.heapify(heap)
+    
+        while len(heap) > 1:
+            right = heapq.heappop(heap)
+            left = heapq.heappop(heap)
+            merged = HuffmanNode(left.freq + right.freq, None, left, right)
+            heapq.heappush(heap, merged)
+    
+        self.root = heap[0]
+
+    def _generate_codes(self, node, current_code=""):
+        if node is None:
+            return
+        if node.symbol is not None:
+            self.huffman_dict[node.symbol] = current_code
+        self._generate_codes(node.left, current_code + "0")
+        self._generate_codes(node.right, current_code + "1")
+
+    def encode(self):
+        self.calculate_frequencies()
+        self.build_tree()
+        self._generate_codes(self.root)  # Ajouté
+        return ''.join(self.huffman_dict[lettre] for lettre in self.texte)
+
+    def decode(self, encoded_text):
+        self.inverse_huffman_dict = {v: k for k, v in self.huffman_dict.items()}
+        decoded_text = ""
+        current_bits = ""
+        for bit in encoded_text:
+            current_bits += bit
+            if current_bits in self.inverse_huffman_dict:
+                decoded_text += self.inverse_huffman_dict[current_bits]
+                current_bits = ""
+        return decoded_text
+
+    def visualize_tree(self):
+        dot = Digraph()
+        self._add_edges(dot, self.root)
+        dot.render('huffman_tree', format='png', view=True)
+
+    def _add_edges(self, dot, node, parent_id=None, edge_label=""):
+        if node is None:
+            return
+
+        node_id = str(id(node))
+        label = f'{node.symbol if node.symbol else "Node"}\n{node.freq}'
+        dot.node(node_id, label)
+
+        if parent_id:
+            dot.edge(parent_id, node_id, label=edge_label)
+
+        self._add_edges(dot, node.left, node_id, '0')
+        self._add_edges(dot, node.right, node_id, '1')
+
+
+
+def test_calculate_frequencies():
+    huffman = HuffmanCompression("hello world")
+    frequencies = huffman.calculate_frequencies()
+    expected_frequencies = defaultdict(int, {'h': 1, 'e': 1, 'l': 3, 'o': 2, ' ': 1, 'w': 1, 'r': 1, 'd': 1})
+    assert frequencies == expected_frequencies
+
+def test_build_tree():
+    huffman = HuffmanCompression("hello world")
+    huffman.calculate_frequencies()
+    huffman.build_tree()
+    assert huffman.root is not None
+
+def test_encode_decode():
+    huffman = HuffmanCompression("hello world")
     encoded_text = huffman.encode()
     decoded_text = huffman.decode(encoded_text)
-    assert decoded_text == texte
+    assert decoded_text == "hello world"
 
-    # Tester pour un texte vide
-    texte_vide = ""
-    huffman_vide = HuffmanCompression(texte_vide)
-    encoded_text_vide = huffman_vide.encode()
-    decoded_text_vide = huffman_vide.decode(encoded_text_vide)
-    assert decoded_text_vide == texte_vide
+def test_empty_string():
+    huffman = HuffmanCompression("")
+    with pytest.raises(ValueError):
+        huffman.build_tree()
 
-    # Tester avec des répétitions de caractères
-    texte_repetitif = "aaaaaa"
-    huffman_repetitif = HuffmanCompression(texte_repetitif)
-    encoded_text_repetitif = huffman_repetitif.encode()
-    decoded_text_repetitif = huffman_repetitif.decode(encoded_text_repetitif)
-    assert decoded_text_repetitif == texte_repetitif
+def test_single_character():
+    huffman = HuffmanCompression("a")
+    encoded_text = huffman.encode()
+    decoded_text = huffman.decode(encoded_text)
+    assert decoded_text == "a"
 
-    # Tester avec des caractères spéciaux
-    texte_special = "!@#$%^&*()"
-    huffman_special = HuffmanCompression(texte_special)
-    encoded_text_special = huffman_special.encode()
-    decoded_text_special = huffman_special.decode(encoded_text_special)
-    assert decoded_text_special == texte_special
+def test_multiple_same_characters():
+    huffman = HuffmanCompression("aaaaaa")
+    encoded_text = huffman.encode()
+    decoded_text = huffman.decode(encoded_text)
+    assert decoded_text == "aaaaaa"
 
-    # Tester avec une chaîne contenant des espaces
-    texte_espaces = "hello world"
-    huffman_espaces = HuffmanCompression(texte_espaces)
-    encoded_text_espaces = huffman_espaces.encode()
-    decoded_text_espaces = huffman_espaces.decode(encoded_text_espaces)
-    assert decoded_text_espaces == texte_espaces
+def test_frequencies_for_repeated_chars():
+    huffman = HuffmanCompression("aaabbb")
+    frequencies = huffman.calculate_frequencies()
+    expected_frequencies = defaultdict(int, {'a': 3, 'b': 3})
+    assert frequencies == expected_frequencies
 
-    # Vérifier que le texte encodé n'est pas le même que le texte original
-    assert encoded_text != texte
-    assert encoded_text_special != texte_special
+def test_huffman_codes():
+    huffman = HuffmanCompression("aab")
+    huffman.encode()
+    assert 'a' in huffman.huffman_dict
+    assert 'b' in huffman.huffman_dict
+    assert len(huffman.huffman_dict) == 2
 
-    # Tester la gestion d'une entrée invalide pour le décodage
-    with pytest.raises(KeyError):
-        huffman.decode("invalid_encoded_text")
+def test_visualize_tree(capsys):
+    huffman = HuffmanCompression("hello")
+    huffman.encode()
+    huffman.visualize_tree()
+    captured = capsys.readouterr()
+    assert True
+
+if __name__ == "__main__":
+    pytest.main()

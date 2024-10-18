@@ -1,8 +1,12 @@
 import pytest
 from collections import defaultdict
+from heapq import heappush, heappop, heapify
 
-# Fonction que tu peux extraire de ton code original
+
 def huffman_encode(texte):
+    if not texte:  # Vérifiez si le texte est vide
+        return "", {}  # Retourne une chaîne vide et un dictionnaire vide
+
     freq_lib = defaultdict(int)    
     for lettre in texte:
         freq_lib[lettre] += 1
@@ -19,7 +23,7 @@ def huffman_encode(texte):
             pair[1] = '1' + pair[1]
         heappush(tree, [right[0] + left[0]] + right[1:] + left[1:])
     
-    huffman_list = right[1:] + left[1:]
+    huffman_list = right[1:] + left[1:]  # Cette ligne est maintenant sûre
     huffman_dict = {a[0]: str(a[1]) for a in huffman_list}
     encoded_text = ''.join(huffman_dict[lettre] for lettre in texte)
     
@@ -51,3 +55,5 @@ def test_huffman():
 
     assert decoded_text_vide == texte_vide
 
+if __name__ == "__main__":
+    pytest.main()
