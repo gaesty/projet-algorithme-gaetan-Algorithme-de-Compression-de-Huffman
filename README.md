@@ -45,6 +45,9 @@ L'algorithme de Huffman est un outil génial qui nous aide à rendre nos fichier
 
 Et voilà, vous savez maintenant comment fonctionne cet algorithme ! Cool, non ?
 
+### Nécessaire 
+
+Installation de l'executable de [GraphVIZ](https://graphviz.org/download/) ou `winget install graphviz`
 
 #### Comment se présente le projet :
 ```
